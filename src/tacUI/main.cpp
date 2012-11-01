@@ -50,6 +50,16 @@ void showUsage();
 
 int main(int argc, char* argv[])
 {
+    try {
+
+    }
+    catch ( const H2Core::H2Exception& ex ) {
+        std::cerr << "[main] Exception: " << ex.what() << std::endl;
+    }
+    catch (...) {
+        std::cerr << "[main] Unknown exception X-(" << std::endl;
+    }
+
 
     return 0;
 }
