@@ -4,6 +4,7 @@ FILE(GLOB_RECURSE h2tacUI_SRCS *.cpp)
 INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR}/src/core/include        # core headers
     ${CMAKE_BINARY_DIR}/src/core/include        # generated config.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/launchpad       # liblaunchpad
     ${QT_INCLUDES}
     ${LASH_INCLUDE_DIR}
 )
@@ -13,6 +14,7 @@ TARGET_LINK_LIBRARIES(h2tacUI
     hydrogen-core-${VERSION}
     ${QT_QTGUI_LIBRARY}
     ${LASH_LIBRARIES}
+    usb-1.0
 )
 
 ADD_DEPENDENCIES(h2tacUI hydrogen-core-${VERSION})
