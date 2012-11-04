@@ -95,7 +95,9 @@ int main(int argc, char* argv[])
 
         ___INFOLOG("Running main thread");
         bool exit = false;
-        pPref->m_bUseMetronome = true;
+        pPref->m_bUseMetronome = false;
+
+        lp.ctrl(0, LibLaunpad::green_high);
 
         while(!exit){
             lp.receive();
@@ -202,6 +204,7 @@ int main(int argc, char* argv[])
         std::cerr << "[main] Unknown exception X-(" << std::endl;
     }
 
+    lp.reset();
     lp.close();
 
     return 0;
