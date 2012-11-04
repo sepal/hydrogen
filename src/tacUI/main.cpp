@@ -183,6 +183,8 @@ int main(int argc, char* argv[])
             }
         }
 
+        lp.reset();
+        lp.close();
 
         // Cleanup
         delete pPref;
@@ -203,9 +205,6 @@ int main(int argc, char* argv[])
     catch (...) {
         std::cerr << "[main] Unknown exception X-(" << std::endl;
     }
-
-    lp.reset();
-    lp.close();
 
     return 0;
 }
