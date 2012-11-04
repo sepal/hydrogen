@@ -170,11 +170,13 @@ int main(int argc, char* argv[])
                             lp.ctrl(4, LibLaunpad::green_high);
                         }
                     }
+                    break;
                 case 109:
                     if ( lp.receivedVal() > 0 ) {
                         pPref->m_bUseMetronome = pPref->m_bUseMetronome == true ? false : true;
                         lp.ctrl(5, (pPref->m_bUseMetronome ? LibLaunpad::green_middle : 0));
                     }
+                    break;
                 }
             }
         }
