@@ -61,7 +61,6 @@ int main(int argc, char* argv[])
 {
 
     LibLaunpad lp;
-    lp.open();
 
     try {
         // Setup utilities.
@@ -75,6 +74,10 @@ int main(int argc, char* argv[])
 
         ___INFOLOG( QString("Using QT version ") + QString( qVersion() ) );
         ___INFOLOG( "Using data path: " + H2Core::Filesystem::sys_data_path() );
+
+        ___INFOLOG( "Opening Launchpad" );
+        lp.open();
+
 
         H2Core::Preferences *pPref = H2Core::Preferences::get_instance();
         pPref->loadPreferences(true);
@@ -142,6 +145,9 @@ int main(int argc, char* argv[])
     }
     catch ( const H2Core::H2Exception& ex ) {
         std::cerr << "[main] Exception: " << ex.what() << std::endl;
+    }
+    catch (LibLaunpadException *e) {
+        std::cerr << "[main] Launchpad exception: " << e->what() << std::endl;
     }
     catch (...) {
         std::cerr << "[main] Unknown exception X-(" << std::endl;
