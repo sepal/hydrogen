@@ -12,6 +12,7 @@
 
 #include "tacui.h"
 #include "launchpad/liblaunchpad.h"
+#include "lppatterneditor.h"
 
 class TacLaunchpad : public H2Core::Object, public TacUI
 {
@@ -23,13 +24,16 @@ public:
 
     void checkUI();
 
-//protected:
+protected:
     virtual void started();
     virtual void stopped();
 
 private:
     static TacLaunchpad* __instance;
     LibLaunpad launchpad;
+
+    LPPatternEditor patternEditor;
+    LPMode* currentMode;
 
     TacLaunchpad();
 

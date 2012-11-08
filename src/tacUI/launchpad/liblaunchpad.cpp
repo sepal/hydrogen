@@ -121,10 +121,14 @@ int LibLaunpad::receivedVal() {
 
 LibLaunpad::Button LibLaunpad::receivedButton()
 {
-    int y = event[1] / 16;
-    int x = event[1] - (16 * y);
+    if (receivedType() != CTRL) {
+        int y = event[1] / 16;
+        int x = event[1] - (16 * y);
 
-    return Button(receivedType() == CTRL ? true : false, x, y, event[2]);
+        return Button(false, x, y, event[2]);
+    } else {
+        return Button(true, event[1]-104, 0, event[2]);
+    }
 }
 
 int LibLaunpad::check(int intensity)
