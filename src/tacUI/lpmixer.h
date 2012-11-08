@@ -1,20 +1,17 @@
-#ifndef LPPATTERNEDITOR_H
-#define LPPATTERNEDITOR_H
+#ifndef LPMIXER_H
+#define LPMIXER_H
 
 #include <hydrogen/hydrogen.h>
 #include <hydrogen/audio_engine.h>
-#include <hydrogen/basics/note.h>
 #include <hydrogen/basics/instrument_list.h>
 #include <hydrogen/basics/instrument.h>
-#include <hydrogen/basics/pattern_list.h>
-#include <hydrogen/basics/pattern.h>
 
 #include "lpmode.h"
 
-class LPPatternEditor : public LPMode
+class LPMixer : public LPMode
 {
 public:
-    LPPatternEditor(LibLaunpad* launchpad);
+    LPMixer(LibLaunpad* launchpad);
 
     void enter();
     void exit();
@@ -28,6 +25,13 @@ public:
     void scenePressed(LibLaunpad::Button btn);
 
     void draw();
+
+private:
+    // Cached volume
+    float vol[8];
+    // Is one of the matix buttons pressed?
+    bool pressed[8][8];
+    static const float vol_div = 1.0f/8.0f;
 };
 
-#endif // LPPATTERNEDITOR_H
+#endif // LPMIXER_H

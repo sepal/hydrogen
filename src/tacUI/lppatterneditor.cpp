@@ -4,6 +4,18 @@ LPPatternEditor::LPPatternEditor(LibLaunpad* launchpad) : LPMode(launchpad)
 {
 }
 
+void LPPatternEditor::enter()
+{
+    launchpad->reset();
+    launchpad->ctrl(4, LibLaunpad::green_middle);
+    ___DEBUGLOG("entered LPPatternEditor.");
+}
+
+void LPPatternEditor::exit()
+{
+    ___DEBUGLOG("exited lpmixer.");
+}
+
 void LPPatternEditor::upPressed(int val)
 {
 }
@@ -73,6 +85,7 @@ void LPPatternEditor::scenePressed(LibLaunpad::Button btn)
     H2Core::Song* song = H2Core::Hydrogen::get_instance()->getSong();
     H2Core::Instrument* pSelectedInstrument = song->get_instrument_list()->get(btn.row);
 
+    H2Core::AudioEngine::get_instance()->lock( RIGHT_HERE );	// lock the audio engine
     H2Core::Note *pNote = new H2Core::Note(pSelectedInstrument, 0, velocity, pan_L, pan_R, nLength, fPitch);
 
     if (btn.velocity > 0) {
@@ -83,4 +96,9 @@ void LPPatternEditor::scenePressed(LibLaunpad::Button btn)
     }
     H2Core::AudioEngine::get_instance()->unlock();
     launchpad->matrix(btn);
+}
+
+void LPPatternEditor::draw()
+{
+    // Do nothing.
 }

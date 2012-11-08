@@ -13,6 +13,7 @@
 #include "tacui.h"
 #include "launchpad/liblaunchpad.h"
 #include "lppatterneditor.h"
+#include "lpmixer.h"
 
 class TacLaunchpad : public H2Core::Object, public TacUI
 {
@@ -23,6 +24,7 @@ public:
     ~TacLaunchpad();
 
     void checkUI();
+    void draw();
 
 protected:
     virtual void started();
@@ -33,9 +35,11 @@ private:
     LibLaunpad launchpad;
 
     LPPatternEditor patternEditor;
+    LPMixer mixer;
     LPMode* currentMode;
 
     TacLaunchpad();
+    void switchMode(LPMode* newMode);
 
 };
 

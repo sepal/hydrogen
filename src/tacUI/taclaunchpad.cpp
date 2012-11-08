@@ -14,6 +14,7 @@ void TacLaunchpad::create_instance()
 TacLaunchpad::TacLaunchpad()
     : H2Core::Object(__class_name),
       patternEditor(&launchpad),
+      mixer(&launchpad),
       currentMode(NULL)
 {
     __instance = this;
@@ -29,47 +30,45 @@ TacLaunchpad::~TacLaunchpad()
 void TacLaunchpad::checkUI()
 {
     launchpad.receive();
-
-
     LibLaunpad::Button btn = launchpad.receivedButton();
 
-
     if (!btn.is_control) {
-        if (currentMode == NULL)
-            return ;
-
-        if (btn.column == 8) {
-            currentMode->scenePressed(btn);
-        } else {
-            currentMode->matrixPressed(btn);
+        if (currentMode != NULL) {
+            if (btn.column == 8) {
+                currentMode->scenePressed(btn);
+            } else {
+                currentMode->matrixPressed(btn);
+            }
         }
     } else {
         switch (btn.column) {
         case 0:
-            if (currentMode == NULL)
-                return ;
-            currentMode->upPressed(btn.velocity);
+            if (currentMode != NULL)
+                currentMode->upPressed(btn.velocity);
             break;
         case 1:
             if (currentMode == NULL)
-                return ;
-            currentMode->downPressed(btn.velocity);
+                currentMode->downPressed(btn.velocity);
             break;
         case 2:
             if (currentMode == NULL)
-                return ;
-            currentMode->leftPressed(btn.velocity);
+                currentMode->leftPressed(btn.velocity);
             break;
         case 3:
             if (currentMode == NULL)
-                return ;
-            currentMode->rightPressed(btn.velocity);
+                currentMode->rightPressed(btn.velocity);
             break;
         case 4:
-            // Pressing Session while in session mode will exit the program.
-            if (currentMode == &patternEditor) {
+            // Pressing session while in session mode will exit the program.
+            if (currentMode == &patternEditor && btn.velocity > 0) {
                 this->stop();
+            } else if(btn.velocity > 0) {
+                switchMode(&patternEditor);
             }
+            break;
+        case 7:
+            if (btn.velocity > 0)
+                switchMode(&mixer);
             break;
         }
     }
@@ -82,4 +81,20 @@ void TacLaunchpad::started() {
 
 void TacLaunchpad::stopped() {
     launchpad.reset();
+}
+
+void TacLaunchpad::draw() {
+    if (currentMode) {
+        currentMode->draw();
+    }
+}
+
+void TacLaunchpad::switchMode(LPMode* newMode)
+{
+    if (newMode && newMode != currentMode) {
+        if (currentMode)
+            currentMode->exit();
+        currentMode = newMode;
+        currentMode->enter();
+    }
 }

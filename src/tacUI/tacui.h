@@ -29,6 +29,7 @@ public:
     bool running();
     void stop();
     virtual void checkUI() = 0;
+    virtual void draw() = 0;
 protected:
 
     /// Mutex for syncronized access.
