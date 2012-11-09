@@ -29,8 +29,6 @@ public:
 private:
     // Cached volume
     float vol[8];
-    // Is one of the matix buttons pressed?
-    bool pressed[8][8];
     static const float vol_div = 1.0f/8.0f;
 };
 

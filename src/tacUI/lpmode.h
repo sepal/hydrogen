@@ -25,6 +25,9 @@ public:
     void unlock();
 protected:
     LibLaunpad* launchpad;
+    bool locked;
+    // Is one of the matix buttons pressed?
+    bool pressed[8][8];
 
 private:
     /// Mutex for syncronized access to the launchpad.

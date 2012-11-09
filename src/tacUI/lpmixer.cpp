@@ -2,10 +2,12 @@
 
 LPMixer::LPMixer(LibLaunpad* launchpad) : LPMode(launchpad)
 {
+    locked = false;
 }
 
 void LPMixer::enter()
 {
+    locked = true;
     launchpad->reset();
     for (int i=0; i<8; i++) {
         vol[i] = 0;
@@ -16,6 +18,7 @@ void LPMixer::enter()
         }
     }
     launchpad->ctrl(7, LibLaunpad::green_middle);
+    locked = false;
     ___DEBUGLOG("entered lpmixer.");
 }
 
@@ -42,6 +45,7 @@ void LPMixer::rightPressed(int val)
 
 void LPMixer::matrixPressed(LibLaunpad::Button btn)
 {
+    locked = true;
     if (btn.velocity > 0) {
         pressed[btn.row][btn.column] = true;
         H2Core::Instrument* instrument = H2Core::Hydrogen::get_instance()->getSong()->get_instrument_list()->get(btn.column);
@@ -52,7 +56,6 @@ void LPMixer::matrixPressed(LibLaunpad::Button btn)
         } else {
             btn.velocity = LibLaunpad::green_high;
         }
-        launchpad->matrix(btn);
     } else {
         pressed[btn.row][btn.column] = false;
         if (btn.row == 0) {
@@ -60,17 +63,36 @@ void LPMixer::matrixPressed(LibLaunpad::Button btn)
         } else {
             btn.velocity = LibLaunpad::green_low;
         }
-        launchpad->matrix(btn);
-
     }
+    launchpad->matrix(btn);
+    locked = false;
 }
 
 void LPMixer::scenePressed(LibLaunpad::Button btn)
 {
+    if (btn.velocity > 0) {
+        for (int column=0; column<8; column++) {
+            H2Core::Instrument* instrument = H2Core::Hydrogen::get_instance()->getSong()->get_instrument_list()->get(column);
+            float cur_vol = instrument->get_volume();
+            int btn_vol = cur_vol / vol_div;
+            int new_vol = (7-btn.row);
+            instrument->set_volume( (new_vol) * vol_div );
+        }
+        if (btn.row == 0)
+            btn.velocity = LibLaunpad::red_high;
+        else
+            btn.velocity = LibLaunpad::green_high;
+    } else {
+        btn.velocity = 0;
+    }
+    launchpad->matrix(btn);
 }
 
 void LPMixer::draw()
 {
+    if (locked) {
+        return;
+    }
     H2Core::InstrumentList* instruments = H2Core::Hydrogen::get_instance()->getSong()->get_instrument_list();
 
     for (int i=0; i<8; i++) {
@@ -78,8 +100,6 @@ void LPMixer::draw()
         if (vol[i] != instrument->get_volume()) {
             vol[i] = instrument->get_volume();
             int btn_vol = vol[i] / vol_div;
-            std::cout << vol[i] / vol_div << std::endl;
-            std::cout <<  btn_vol  << std::endl;
 
             for (int row=0; row<8; row++) {
                 int color = 0;
