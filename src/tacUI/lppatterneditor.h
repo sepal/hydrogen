@@ -6,6 +6,7 @@
 #include <hydrogen/basics/note.h>
 #include <hydrogen/basics/instrument_list.h>
 #include <hydrogen/basics/instrument.h>
+#include <hydrogen/Preferences.h>
 #include <hydrogen/basics/pattern_list.h>
 #include <hydrogen/basics/pattern.h>
 
@@ -26,8 +27,8 @@ public:
 
     void matrixPressed(LibLaunpad::Button btn);
     void scenePressed(LibLaunpad::Button btn);
-
-    void draw();
+private:
+    int instOffset;
 };
 
 #endif // LPPATTERNEDITOR_H

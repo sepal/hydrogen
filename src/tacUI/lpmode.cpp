@@ -3,6 +3,7 @@
 LPMode::LPMode(LibLaunpad* launchpad)
 {
     this->launchpad = launchpad;
+    locked = false;
 }
 
 

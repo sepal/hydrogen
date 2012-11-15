@@ -14,6 +14,7 @@ void TacLaunchpad::create_instance()
 TacLaunchpad::TacLaunchpad()
     : H2Core::Object(__class_name),
       patternEditor(&launchpad),
+      drumkit(&launchpad),
       mixer(&launchpad),
       currentMode(NULL)
 {
@@ -65,6 +66,10 @@ void TacLaunchpad::checkUI()
             } else if(btn.velocity > 0) {
                 switchMode(&patternEditor);
             }
+            break;
+        case 5:
+            if (btn.velocity > 0)
+                switchMode(&drumkit);
             break;
         case 7:
             if (btn.velocity > 0)

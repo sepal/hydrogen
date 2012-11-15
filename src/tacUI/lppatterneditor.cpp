@@ -1,8 +1,8 @@
 #include "lppatterneditor.h"
-#include <hydrogen/Preferences.h>
 
 LPPatternEditor::LPPatternEditor(LibLaunpad* launchpad) : LPMode(launchpad)
 {
+    instOffset = true;
 }
 
 void LPPatternEditor::enter()
@@ -161,10 +161,4 @@ void LPPatternEditor::scenePressed(LibLaunpad::Button btn)
     }
     launchpad->matrix(btn);
 
-}
-
-void LPPatternEditor::draw()
-{
-    if (locked)
-        return;
 }

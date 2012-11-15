@@ -18,7 +18,7 @@ public:
 
     virtual void matrixPressed(LibLaunpad::Button btn) = 0;
     virtual void scenePressed(LibLaunpad::Button btn) = 0;
-    virtual void draw() = 0;
+    virtual void draw() {}
 
     void lock();
     bool try_lock();

@@ -13,6 +13,7 @@
 #include "tacui.h"
 #include "launchpad/liblaunchpad.h"
 #include "lppatterneditor.h"
+#include "lpdrumkit.h"
 #include "lpmixer.h"
 
 class TacLaunchpad : public H2Core::Object, public TacUI
@@ -35,6 +36,7 @@ private:
     LibLaunpad launchpad;
 
     LPPatternEditor patternEditor;
+    LPDrumKit drumkit;
     LPMixer mixer;
     LPMode* currentMode;
 

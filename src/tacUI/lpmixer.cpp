@@ -2,7 +2,6 @@
 
 LPMixer::LPMixer(LibLaunpad* launchpad) : LPMode(launchpad)
 {
-    locked = false;
 }
 
 void LPMixer::enter()
