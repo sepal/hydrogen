@@ -27,20 +27,7 @@
 #include "ui_SoundLibraryImportDialog_UI.h"
 #include <hydrogen/object.h>
 #include <hydrogen/Preferences.h>
-
-#include <vector>
-
-
-struct SoundLibraryInfo
-{
-	QString m_sName;
-	QString m_sURL;
-	QString m_sInfo;
-	QString m_sAuthor;
-	QString m_sType;
-	QString m_sLicense;
-};
-
+#include "SoundLibraryDatastructures.h"
 
 ///
 /// This dialog is used to import a SoundLibrary file from a local file or via HTTP.
@@ -63,6 +50,7 @@ class SoundLibraryImportDialog : public QDialog, public Ui_SoundLibraryImportDia
 		void on_close_btn_clicked();
 
 		void soundLibraryItemChanged( QTreeWidgetItem*, QTreeWidgetItem* );
+		void onRepositoryComboBoxIndexChanged(int);
 
 	private:
 		std::vector<SoundLibraryInfo> m_soundLibraryList;
@@ -73,6 +61,10 @@ class SoundLibraryImportDialog : public QDialog, public Ui_SoundLibraryImportDia
 		QTreeWidgetItem* m_pPatternItem;
 
 		bool isSoundLibraryItemAlreadyInstalled( SoundLibraryInfo sInfo );
+		void writeCachedData(const QString& fileName, const QString& data);
+		QString readCachedData(const QString& fileName);
+		QString getCachedFilename();
+		void reloadRepositoryData();
 		void updateSoundLibraryList();
 		void updateRepositoryCombo();
 };

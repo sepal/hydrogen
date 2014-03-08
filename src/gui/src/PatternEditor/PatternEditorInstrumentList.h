@@ -52,9 +52,9 @@ class InstrumentLine : public PixmapWidget
 		void setSelected(bool isSelected);
 		void setNumber(int nIndex);
 		void setMuted(bool isMuted);
-                void setSoloed( bool soloed );
+		void setSoloed( bool soloed );
 
-        private slots:
+	private slots:
 		void functionClearNotes();
 
 		void functionFillAllNotes();
@@ -64,6 +64,11 @@ class InstrumentLine : public PixmapWidget
 		void functionFillEverySixNotes();
 		void functionFillEveryEightNotes();
 		void functionFillNotes( int every );
+		void functionCopyInstrumentPattern();
+		void functionCopyAllInstrumentPatterns();
+		void functionPasteInstrumentPattern();
+		void functionPasteAllInstrumentPatterns();
+		void functionPasteInstrumentPatternExec(int patternID);
 
 		void functionRandomizeVelocity();
 		void functionDeleteInstrument();
@@ -74,6 +79,8 @@ class InstrumentLine : public PixmapWidget
 	private:
 		QMenu *m_pFunctionPopup;
 		QMenu *m_pFunctionPopupSub;
+		QMenu *m_pCopyPopupSub;
+		QMenu *m_pPastePopupSub;
 		QLabel *m_pNameLbl;
 		bool m_bIsSelected;
 		int m_nInstrumentNumber;	///< The related instrument number
@@ -86,7 +93,7 @@ class InstrumentLine : public PixmapWidget
 
 
 class PatternEditorInstrumentList : public QWidget, public H2Core::Object {
-    H2_OBJECT
+	H2_OBJECT
 	Q_OBJECT
 
 	public:

@@ -25,7 +25,6 @@
 #include <map>
 #include <QMutexLocker>
 
-
 /**
 * @class MidiMap
 *
@@ -42,21 +41,21 @@
 *
 */
 
-
 MidiMap * MidiMap::__instance = 0;
 const char* MidiMap::__class_name = "MidiMap";
 
 MidiMap::MidiMap()
- : Object( __class_name )
+	: Object( __class_name )
 {
 	__instance = this;
 	QMutexLocker mx(&__mutex);
 
 	//constructor
 	for(int note = 0; note < 128; note++ ) {
-				__note_array[ note ] = new MidiAction("NOTHING");
-				__cc_array[ note ] = new MidiAction("NOTHING");
+		__note_array[ note ] = new MidiAction("NOTHING");
+		__cc_array[ note ] = new MidiAction("NOTHING");
 	}
+	__pc_action = new MidiAction("NOTHING");
 }
 
 MidiMap::~MidiMap()
@@ -73,6 +72,7 @@ MidiMap::~MidiMap()
 		delete __note_array[ i ];
 		delete __cc_array[ i ];
 	}
+	delete __pc_action;
 
 	__instance = NULL;
 }
@@ -109,8 +109,8 @@ void MidiMap::reset()
 	for( i = 0 ; i < 128 ; ++i ) {
 		delete __note_array[ i ];
 		delete __cc_array[ i ];
-				__note_array[ i ] = new MidiAction("NOTHING");
-				__cc_array[ i ] = new MidiAction("NOTHING");
+		__note_array[ i ] = new MidiAction("NOTHING");
+		__cc_array[ i ] = new MidiAction("NOTHING");
 	}
 
 }
@@ -161,6 +161,14 @@ void MidiMap::registerCCEvent( int parameter , MidiAction * pAction ){
 	}
 }
 
+/**
+ * Sets up the relation between a program change and an action
+ */
+void MidiMap::registerPCEvent( MidiAction * pAction ){
+	QMutexLocker mx(&__mutex);
+	delete __pc_action;
+	__pc_action = pAction;
+}
 
 /**
  * Returns the mmc action which was linked to the given event.
@@ -168,7 +176,7 @@ void MidiMap::registerCCEvent( int parameter , MidiAction * pAction ){
 MidiAction* MidiMap::getMMCAction( QString eventString )
 {
 	QMutexLocker mx(&__mutex);
-		std::map< QString, MidiAction *>::iterator dIter = mmcMap.find( eventString );
+	std::map< QString, MidiAction *>::iterator dIter = mmcMap.find( eventString );
 	if ( dIter == mmcMap.end() ){
 		return NULL;
 	}
@@ -192,5 +200,14 @@ MidiAction * MidiMap::getCCAction( int parameter )
 {
 	QMutexLocker mx(&__mutex);
 	return __cc_array[ parameter ];
+}
+
+/**
+ * Returns the pc action which was linked to the given event.
+ */
+MidiAction * MidiMap::getPCAction()
+{
+	QMutexLocker mx(&__mutex);
+	return __pc_action;
 }
 

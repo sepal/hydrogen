@@ -170,15 +170,17 @@ void Instrument::load_from( Drumkit* drumkit, Instrument* instrument, bool is_li
 	this->set_random_pitch_factor( instrument->get_random_pitch_factor() );
 	this->set_muted( instrument->is_muted() );
 	this->set_mute_group( instrument->get_mute_group() );
+	this->set_midi_out_channel( instrument->get_midi_out_channel() );
+	this->set_midi_out_note( instrument->get_midi_out_note() );
+	this->set_stop_notes( instrument->is_stop_notes() );
 	if ( is_live )
 		AudioEngine::get_instance()->unlock();
 }
 
-void Instrument::load_from( const QString& drumkit_name, const QString& instrument_name, bool is_live )
+void Instrument::load_from( const QString& dk_name, const QString& instrument_name, bool is_live )
 {
-	QString dir = Filesystem::drumkit_path_search( drumkit_name );
-	if ( dir.isEmpty() ) return;
-	Drumkit* drumkit = Drumkit::load( dir );
+	Drumkit* drumkit = Drumkit::load_by_name( dk_name );
+	if ( ! drumkit ) return;
 	assert( drumkit );
 	Instrument* instrument = drumkit->get_instruments()->find( instrument_name );
 	if ( instrument!=0 ) {

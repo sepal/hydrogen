@@ -67,12 +67,19 @@ Drumkit::~Drumkit()
 	if( __instruments ) delete __instruments;
 }
 
+Drumkit* Drumkit::load_by_name ( const QString& dk_name, bool load_samples )
+{
+	QString dir = Filesystem::drumkit_path_search( dk_name );
+	if ( dir.isEmpty() ) return NULL;
+	return load( dir, load_samples );
+}
+
 Drumkit* Drumkit::load( const QString& dk_dir, bool load_samples )
 {
 	INFOLOG( QString( "Load drumkit %1" ).arg( dk_dir ) );
 	if( !Filesystem::drumkit_valid( dk_dir ) ) {
 		ERRORLOG( QString( "%1 is not valid drumkit" ).arg( dk_dir ) );
-		return 0;
+		return NULL;
 	}
 	return load_file( Filesystem::drumkit_file( dk_dir ), load_samples );
 }
@@ -86,7 +93,7 @@ Drumkit* Drumkit::load_file( const QString& dk_path, bool load_samples )
 	XMLNode root = doc.firstChildElement( "drumkit_info" );
 	if ( root.isNull() ) {
 		ERRORLOG( "drumkit_info node not found" );
-		return 0;
+		return NULL;
 	}
 	Drumkit* drumkit = Drumkit::load_from( &root, dk_path.left( dk_path.lastIndexOf( "/" ) ) );
 	if( load_samples ) drumkit->load_samples();
@@ -98,13 +105,13 @@ Drumkit* Drumkit::load_from( XMLNode* node, const QString& dk_path )
 	QString drumkit_name = node->read_string( "name", "", false, false );
 	if ( drumkit_name.isEmpty() ) {
 		ERRORLOG( "Drumkit has no name, abort" );
-		return 0;
+		return NULL;
 	}
 	Drumkit* drumkit = new Drumkit();
 	drumkit->__path = dk_path;
 	drumkit->__name = drumkit_name;
 	drumkit->__author = node->read_string( "author", "undefined author" );
-	drumkit->__info = node->read_string( "info", "defaultInfo" );
+	drumkit->__info = node->read_string( "info", "No information available." );
 	drumkit->__license = node->read_string( "license", "undefined license" );
 	XMLNode instruments_node = node->firstChildElement( "instrumentList" );
 	if ( instruments_node.isNull() ) {
@@ -159,9 +166,9 @@ bool Drumkit::save( const QString& dk_dir, bool overwrite )
 	if( !Filesystem::mkdir( dk_dir ) ) {
 		return false;
 	}
-	bool ret = save_file( Filesystem::drumkit_file( dk_dir ), overwrite );
+	bool ret = save_samples( dk_dir, overwrite );
 	if ( ret ) {
-		ret = save_samples( dk_dir, overwrite );
+		ret = save_file( Filesystem::drumkit_file( dk_dir ), overwrite );
 	}
 	return ret;
 }
@@ -197,15 +204,35 @@ bool Drumkit::save_samples( const QString& dk_dir, bool overwrite )
 	}
 
 	InstrumentList* instruments = get_instruments();
-	for( int i=0; i<instruments->size(); i++ ) {
+	for( int i = 0; i < instruments->size(); i++ ) {
 		Instrument* instrument = ( *instruments )[i];
-		for ( int n = 0; n < MAX_LAYERS; n++ ) {
+		for( int n = 0; n < MAX_LAYERS; n++ ) {
 			InstrumentLayer* layer = instrument->get_layer( n );
 			if( layer ) {
-				QString src =  layer->get_sample()->get_filepath();
+				QString src = layer->get_sample()->get_filepath();
 				QString dst = dk_dir + "/" + layer->get_sample()->get_filename();
-				if( !Filesystem::file_copy( src, dst ) ) {
-					return false;
+
+				if( src != dst ) {
+					QString original_dst = dst;
+
+					// If the destination path does not have an extension and there is a dot in the path, hell will break loose. QFileInfo maybe?
+					int insertPosition = original_dst.length();
+					if( original_dst.lastIndexOf(".") > 0 )
+						insertPosition = original_dst.lastIndexOf(".");
+
+					// If the destination path already exists, try to use basename_1, basename_2, etc. instead of basename.
+					int tries = 0;
+					while( Filesystem::file_exists( dst )) {
+						tries++;
+						dst = original_dst;
+						dst.insert( insertPosition, QString("_%1").arg(tries) );
+					}
+
+					layer->get_sample()->set_filename( dst );
+
+					if( !Filesystem::file_copy( src, dst ) ) {
+						return false;
+					}
 				}
 			}
 		}

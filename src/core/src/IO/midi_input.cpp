@@ -57,27 +57,31 @@ void MidiInput::handleMidiMessage( const MidiMessage& msg )
 //	infoLog( "[handleMidiMessage] val1: " + to_string( msg.m_nData1 ) );
 //	infoLog( "[handleMidiMessage] val2: " + to_string( msg.m_nData2 ) );
 
-
 		// midi channel filter for all messages
 		bool bIsChannelValid = true;
-		if ( Preferences::get_instance()->m_nMidiChannelFilter != -1 ) {
-				bIsChannelValid = ( msg.m_nChannel ==  Preferences::get_instance()->m_nMidiChannelFilter);
+		Preferences* pPref = Preferences::get_instance();
+		if ( pPref->m_nMidiChannelFilter != -1
+		  && pPref->m_nMidiChannelFilter != msg.m_nChannel
+		) {
+			bIsChannelValid = false;
 		}
 
 		// exclude all midi channel filter independent messages
 		int type = msg.m_type;
-		if(MidiMessage::SYSEX == type
-						|| MidiMessage::SYSTEM_EXCLUSIVE == type
-						|| MidiMessage::START == type
-						|| MidiMessage::CONTINUE == type
-						|| MidiMessage::STOP == type
-						|| MidiMessage::SONG_POS == type
-						|| MidiMessage::QUARTER_FRAME == type
-						){
-				bIsChannelValid =true;
+		if (  MidiMessage::SYSEX == type
+		   || MidiMessage::SYSTEM_EXCLUSIVE == type
+		   || MidiMessage::START == type
+		   || MidiMessage::CONTINUE == type
+		   || MidiMessage::STOP == type
+		   || MidiMessage::SONG_POS == type
+		   || MidiMessage::QUARTER_FRAME == type
+		) {
+			bIsChannelValid = true;
 		}
-		if(!bIsChannelValid) return;
 
+		if ( !bIsChannelValid) return;
+
+		Hydrogen* pHydrogen = Hydrogen::get_instance();
 		switch ( type ) {
 		case MidiMessage::SYSEX:
 				handleSysexMessage( msg );
@@ -96,13 +100,16 @@ void MidiInput::handleMidiMessage( const MidiMessage& msg )
 				break;
 
 		case MidiMessage::CONTROL_CHANGE:
-				INFOLOG( QString( "[handleMidiMessage] CONTROL_CHANGE Parameter: %1, Value: %2").arg( msg.m_nData1 ).arg( msg.m_nData2 ) );
+				INFOLOG( QString( "[handleMidiMessage] CONTROL_CHANGE Parameter: %1, Value: %2")
+					.arg( msg.m_nData1 ).arg( msg.m_nData2 ) );
 				handleControlChangeMessage( msg );
 				break;
 
 		case MidiMessage::PROGRAM_CHANGE:
-				INFOLOG( QString( "[handleMidiMessage] PROGRAM_CHANGE event, seting next pattern to %1" ).arg( msg.m_nData1 ) );
-				Hydrogen::get_instance()->sequencer_setNextPattern(msg.m_nData1, false, false);
+				INFOLOG( QString( "[handleMidiMessage] PROGRAM_CHANGE event, seting next pattern to %1" )
+					.arg( msg.m_nData1 ) );
+//				Hydrogen::get_instance()->sequencer_setNextPattern(msg.m_nData1, false, false);
+				handleProgramChangeMessage( msg );
 				break;
 
 		case MidiMessage::CHANNEL_PRESSURE:
@@ -117,22 +124,25 @@ void MidiInput::handleMidiMessage( const MidiMessage& msg )
 				ERRORLOG( "SYSTEM_EXCLUSIVE event not handled yet" );
 				break;
 
-		case MidiMessage::START:
+		case MidiMessage::START: /* Start from position 0 */
 				INFOLOG( "START event" );
-				if ( Hydrogen::get_instance()->getState() != STATE_PLAYING ) {
-						Hydrogen::get_instance()->sequencer_play();
+				if ( pHydrogen->getState() != STATE_PLAYING ) {
+					pHydrogen->setPatternPos( 0 );
+					pHydrogen->setTimelineBpm();
+					pHydrogen->sequencer_play();
 				}
 				break;
 
-		case MidiMessage::CONTINUE:
-				ERRORLOG( "CONTINUE event not handled yet" );
+		case MidiMessage::CONTINUE: /* Just start */
+				ERRORLOG( "CONTINUE event" );
+				if ( pHydrogen->getState() != STATE_PLAYING )
+					pHydrogen->sequencer_play();
 				break;
 
-		case MidiMessage::STOP:
+		case MidiMessage::STOP: /* Stop in current position i.e. Pause */
 				INFOLOG( "STOP event" );
-				if ( Hydrogen::get_instance()->getState() == STATE_PLAYING ) {
-						Hydrogen::get_instance()->sequencer_stop();
-				}
+				if ( pHydrogen->getState() == STATE_PLAYING )
+					pHydrogen->sequencer_stop();
 				break;
 
 		case MidiMessage::SONG_POS:
@@ -154,23 +164,34 @@ void MidiInput::handleMidiMessage( const MidiMessage& msg )
 
 void MidiInput::handleControlChangeMessage( const MidiMessage& msg )
 {
-		//INFOLOG( QString( "[handleMidiMessage] CONTROL_CHANGE Parameter: %1, Value: %2" ).arg( msg.m_nData1 ).arg( msg.m_nData2 ) );
-
+	//INFOLOG( QString( "[handleMidiMessage] CONTROL_CHANGE Parameter: %1, Value: %2" ).arg( msg.m_nData1 ).arg( msg.m_nData2 ) );
 	Hydrogen *pEngine = Hydrogen::get_instance();
-		MidiActionManager * aH = MidiActionManager::get_instance();
-	MidiMap * mM = MidiMap::get_instance();
+	MidiActionManager *aH = MidiActionManager::get_instance();
+	MidiMap *mM = MidiMap::get_instance();
 
-		MidiAction * pAction;
-
-	pAction = mM->getCCAction( msg.m_nData1 );
+	MidiAction *pAction = mM->getCCAction( msg.m_nData1 );
 	pAction->setParameter2( QString::number( msg.m_nData2 ) );
 
 	aH->handleAction( pAction );
 
 	pEngine->lastMidiEvent = "CC";
 	pEngine->lastMidiEventParameter = msg.m_nData1;
+}
 
+void MidiInput::handleProgramChangeMessage( const MidiMessage& msg )
+{
+	INFOLOG( QString( "[handleMidiMessage] PROGRAM_CHANGE Value: %1" ).arg( msg.m_nData1 ) );
+	Hydrogen *pEngine = Hydrogen::get_instance();
+	MidiActionManager *aH = MidiActionManager::get_instance();
+	MidiMap *mM = MidiMap::get_instance();
 
+	MidiAction *pAction = mM->getPCAction();
+	pAction->setParameter2( QString::number( msg.m_nData1 ) );
+
+	aH->handleAction( pAction );
+
+	pEngine->lastMidiEvent = "PROGRAM_CHANGE";
+	pEngine->lastMidiEventParameter = msg.m_nData1;
 }
 
 void MidiInput::handleNoteOnMessage( const MidiMessage& msg )
@@ -183,9 +204,9 @@ void MidiInput::handleNoteOnMessage( const MidiMessage& msg )
 	if ( fVelocity == 0 ) {
 		handleNoteOffMessage( msg );
 		return;
-		}
+	}
 
-		MidiActionManager * aH = MidiActionManager::get_instance();
+	MidiActionManager * aH = MidiActionManager::get_instance();
 	MidiMap * mM = MidiMap::get_instance();
 	Hydrogen *pEngine = Hydrogen::get_instance();
 
@@ -202,25 +223,33 @@ void MidiInput::handleNoteOnMessage( const MidiMessage& msg )
 	bool bPatternSelect = false;
 
 
-		if ( bPatternSelect ) {
-				int patternNumber = nNote - 36;
-				//INFOLOG( QString( "next pattern = %1" ).arg( patternNumber ) );
+	if ( bPatternSelect ) {
+		int patternNumber = nNote - 36;
+		//INFOLOG( QString( "next pattern = %1" ).arg( patternNumber ) );
+		pEngine->sequencer_setNextPattern( patternNumber, false, false );
 
-				pEngine->sequencer_setNextPattern( patternNumber, false, false );
-		} else {
-				static const float fPan_L = 1.0f;
-				static const float fPan_R = 1.0f;
+	} else {
+		static const float fPan_L = 1.0f;
+		static const float fPan_R = 1.0f;
 
-				int nInstrument = nNote - 36;
-				if ( nInstrument < 0 ) {
-						nInstrument = 0;
+		int nInstrument = nNote - 36;
+		if ( nInstrument < 0 ) {
+				if(Preferences::get_instance()->__playselectedinstrument)
+				{
+					//we're in instrument mode -> we accept all notes
+				} else {
+					//we're in drumkit mode, lets drop everything < 36
+					nInstrument = 0;
+					return;
 				}
-				if ( nInstrument > ( MAX_INSTRUMENTS -1 ) ) {
-						nInstrument = MAX_INSTRUMENTS - 1;
-				}
 
-				pEngine->addRealtimeNote( nInstrument, fVelocity, fPan_L, fPan_R, 0.0, false, true, nNote );
 		}
+		if ( nInstrument > ( MAX_INSTRUMENTS -1 ) ) {
+				nInstrument = MAX_INSTRUMENTS - 1;
+		}
+
+		pEngine->addRealtimeNote( nInstrument, fVelocity, fPan_L, fPan_R, 0.0, false, true, nNote );
+	}
 
 	__noteOnTick = pEngine->__getMidiRealtimeNoteTickPosition();
 }
@@ -318,16 +347,16 @@ void MidiInput::handleSysexMessage( const MidiMessage& msg )
 	*/
 
 
-		MidiActionManager * aH = MidiActionManager::get_instance();
+	MidiActionManager * aH = MidiActionManager::get_instance();
 	MidiMap * mM = MidiMap::get_instance();
 	Hydrogen *pEngine = Hydrogen::get_instance();
 
 	pEngine->lastMidiEventParameter = msg.m_nData1;
 
 
-if ( msg.m_sysexData.size() == 6 ) {
+	if ( msg.m_sysexData.size() == 6 ) {
 		if (
-					( msg.m_sysexData[0] == 240 ) &&
+			( msg.m_sysexData[0] == 240 ) &&
 			( msg.m_sysexData[1] == 127 ) &&
 					//( msg.m_sysexData[2] == 0 ) &&
 			( msg.m_sysexData[3] == 6 ) ) {
@@ -357,9 +386,8 @@ if ( msg.m_sysexData.size() == 6 ) {
 			}
 
 			case 4:	// FAST FWD
-								pEngine->lastMidiEvent = "MMC_FAST_FORWARD";
-								aH->handleAction(mM->getMMCAction("MMC_FAST_FORWARD"));
-
+				pEngine->lastMidiEvent = "MMC_FAST_FORWARD";
+				aH->handleAction(mM->getMMCAction("MMC_FAST_FORWARD"));
 				break;
 
 			case 5:	// REWIND
@@ -377,10 +405,10 @@ if ( msg.m_sysexData.size() == 6 ) {
 				aH->handleAction(mM->getMMCAction("MMC_RECORD_EXIT"));
 				break;
 
-						case 8:	// RECORD READY
-								pEngine->lastMidiEvent = "MMC_RECORD_READY";
-								aH->handleAction(mM->getMMCAction("MMC_RECORD_READY"));
-								break;
+			case 8:	// RECORD READY
+				pEngine->lastMidiEvent = "MMC_RECORD_READY";
+				aH->handleAction(mM->getMMCAction("MMC_RECORD_READY"));
+				break;
 
 			case 9:	//PAUSE
 				pEngine->lastMidiEvent = "MMC_PAUSE";

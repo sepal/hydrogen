@@ -35,11 +35,13 @@
 using namespace H2Core;
 
 #include "UndoActions.h"
+#include "MainForm.h"
 #include "SongEditor.h"
 #include "SongEditorPanel.h"
 #include "SongEditorPanelBpmWidget.h"
 #include "SongEditorPanelTagWidget.h"
 #include "SoundLibrary/SoundLibraryPanel.h"
+#include "SoundLibrary/SoundLibraryDatastructures.h"
 #include "../PatternEditor/PatternEditorPanel.h"
 #include "../HydrogenApp.h"
 #include "../InstrumentRack.h"
@@ -59,9 +61,9 @@ const char* SongEditor::__class_name = "SongEditor";
 
 SongEditorGridRepresentationItem::SongEditorGridRepresentationItem(int x, int y, bool value)
 {
-    this->x = x;
-    this->y = y;
-    this->value = value;
+	this->x = x;
+	this->y = y;
+	this->value = value;
 }
 
 
@@ -164,7 +166,7 @@ void SongEditor::mousePressEvent( QMouseEvent *ev )
 	HydrogenApp* h2app = HydrogenApp::get_instance();
 	Hydrogen *pEngine = Hydrogen::get_instance();
 	Song *pSong = pEngine->getSong();
-        PatternList *pPatternList = pSong->get_pattern_list();
+		PatternList *pPatternList = pSong->get_pattern_list();
 
 	// don't lock the audio driver before checking that...
 	if ( nRow >= (int)pPatternList->size() || nRow < 0 || nColumn < 0 ) { return; }
@@ -228,8 +230,8 @@ void SongEditor::mousePressEvent( QMouseEvent *ev )
 			}
 			else {
 				if ( nColumn < (int)pColumns->size() ) {
-				    SE_addPatternAction *action = new SE_addPatternAction( nColumn, nRow, nColumnIndex ) ;
-				    h2app->m_undoStack->push( action );
+					SE_addPatternAction *action = new SE_addPatternAction( nColumn, nRow, nColumnIndex ) ;
+					h2app->m_undoStack->push( action );
 				}
 			}
 		}
@@ -258,18 +260,18 @@ void SongEditor::addPattern( int nColumn , int nRow )
 		pColumn->add( pPattern );
 
 	} else {
-	    //we need to add some new columns..
-	    PatternList *pColumn = new PatternList();
-	    m_selectedCells.clear();
-	    int nSpaces = nColumn - pColumns->size();
+		//we need to add some new columns..
+		PatternList *pColumn = new PatternList();
+		m_selectedCells.clear();
+		int nSpaces = nColumn - pColumns->size();
 
-	    pColumns->push_back( pColumn );
+		pColumns->push_back( pColumn );
 
-	    for ( int i = 0; i < nSpaces; i++ ) {
-		    pColumn = new PatternList();
-		    pColumns->push_back( pColumn );
-	    }
-	    pColumn->add( pPattern );
+		for ( int i = 0; i < nSpaces; i++ ) {
+			pColumn = new PatternList();
+			pColumns->push_back( pColumn );
+		}
+		pColumn->add( pPattern );
 	}
 	pSong->__is_modified = true;
 	AudioEngine::get_instance()->unlock();
@@ -400,41 +402,41 @@ void SongEditor::mouseReleaseEvent( QMouseEvent *ev )
 
 	if ( m_bIsMoving ) {	// fine dello spostamento dei pattern
 		// create the new patterns
-		
+
 		/*
 		 * For the proper handling of undo events we have to make sure
 		 * that the array m_movingCells does not include cells that are
 		 * already existing.
 		 *
 		 * Example: A song consists of a sequence with the cells 0,1 and 3.
-		 * Consider that we the two first cells 0 and 1 get moved one 
-		 * cell to the right (to 2,3). An undo action would now delete 
+		 * Consider that we the two first cells 0 and 1 get moved one
+		 * cell to the right (to 2,3). An undo action would now delete
 		 * (2,3) for and re-create 0,1. Cell 3 got deleted now, but it existed
 		 * before the first move operation.
 		 */
 
-                SongEditorGridRepresentationItem* item;
-                m_existingCells.clear();
+		SongEditorGridRepresentationItem* item;
+		m_existingCells.clear();
 		for ( uint i = 0; i < m_movingCells.size(); i++ )
 		{
-                        QPoint cell = m_movingCells[ i ];
+			QPoint cell = m_movingCells[ i ];
 
-                        //looking for cell identified with (cell.x/cell.y) in the gridRepresentation
-                        bool found = false;
-                        foreach(item, gridRepresentation)
-                        {
-                            if(item->x == cell.x() && item->y == cell.y())
-                            {
-                                found = true;
-                            }
-                        }
+			//looking for cell identified with (cell.x/cell.y) in the gridRepresentation
+			bool found = false;
+			foreach(item, gridRepresentation)
+			{
+				if(item->x == cell.x() && item->y == cell.y())
+				{
+					found = true;
+				}
+			}
 
-                        if( found ){
-                            m_existingCells.push_back(cell);
-                        }
+			if( found ){
+				m_existingCells.push_back(cell);
+			}
 		}
 
-                SE_movePatternCellAction *action = new SE_movePatternCellAction( m_movingCells, m_selectedCells , m_existingCells, m_bIsCtrlPressed);
+		SE_movePatternCellAction *action = new SE_movePatternCellAction( m_movingCells, m_selectedCells , m_existingCells, m_bIsCtrlPressed);
 		HydrogenApp::get_instance()->m_undoStack->push( action );
 	}
 
@@ -489,22 +491,22 @@ void SongEditor::movePatternCellAction( std::vector<QPoint> movingCells, std::ve
 
 	if ( bIsCtrlPressed) //Copy
 	{
-                if( undo )
+				if( undo )
 		{
 			// remove the old patterns
 			for ( uint i = 0; i < selectedCells.size(); i++ ) {
 				QPoint cell = selectedCells[ i ];
 
-                                bool existing = false;
-                                for ( uint i = 0; i < existingCells.size(); i++ ) {
-                                    QPoint existing_cell = existingCells[ i ];
-                                    if(existing_cell.x() == cell.x() && existing_cell.y() == cell.y()) existing = true;
-                                }
+				bool existing = false;
+				for ( uint i = 0; i < existingCells.size(); i++ ) {
+					QPoint existing_cell = existingCells[ i ];
+					if(existing_cell.x() == cell.x() && existing_cell.y() == cell.y()) existing = true;
+				}
 
-                                //this cell existed before. Don't delete it!
-                                if(existing){
-                                    continue;
-                                }
+				//this cell existed before. Don't delete it!
+				if(existing){
+					continue;
+				}
 
 
 
@@ -518,7 +520,7 @@ void SongEditor::movePatternCellAction( std::vector<QPoint> movingCells, std::ve
 				}
 				pColumn->del(pPatternList->get( cell.y() ) );
 			}
-			
+
 		}
 	}
 	else {	// MOVE
@@ -526,49 +528,49 @@ void SongEditor::movePatternCellAction( std::vector<QPoint> movingCells, std::ve
 		for ( uint i = 0; i < selectedCells.size(); i++ ) {
 			QPoint cell = selectedCells[ i ];
 			PatternList* pColumn = NULL;
-			
-			/* 
-			 * Check first if pattern was present in movingCells. 
-			 * If it was, don't delete it! 
+
+			/*
+			 * Check first if pattern was present in movingCells.
+			 * If it was, don't delete it!
 			 */
 
-            bool moved = false;
-            for ( uint i = 0; i < movingCells.size(); i++ ) {
-                QPoint cell2 = movingCells[ i ];
-                if( cell.x() == cell2.x() && cell.y() == cell2.y() ){
-                    moved = true;
-                }
-            }
+			bool moved = false;
+			for ( uint i = 0; i < movingCells.size(); i++ ) {
+				QPoint cell2 = movingCells[ i ];
+				if( cell.x() == cell2.x() && cell.y() == cell2.y() ){
+					moved = true;
+				}
+			}
 
-            if( moved )
-            {
-                continue;
-            }
+			if( moved )
+			{
+				continue;
+			}
 
-            if( undo )
-            {
-                bool existing = false;
-                for ( uint i = 0; i < existingCells.size(); i++ ) {
-                    QPoint existing_cell = existingCells[ i ];
-                    if(existing_cell.x() == cell.x() && existing_cell.y() == cell.y()) existing = true;
-                }
+			if( undo )
+			{
+				bool existing = false;
+				for ( uint i = 0; i < existingCells.size(); i++ ) {
+					QPoint existing_cell = existingCells[ i ];
+					if(existing_cell.x() == cell.x() && existing_cell.y() == cell.y()) existing = true;
+				}
 
-                //this cell existed before. Don't delete it!
-                if(existing){
-                    continue;
-                }
-            }
+				//this cell existed before. Don't delete it!
+				if(existing){
+					continue;
+				}
+			}
 
 
-            if ( cell.x() < (int)pColumns->size() ) {
-                pColumn = (*pColumns)[ cell.x() ];
-            }
-            else {
-                pColumn = new PatternList();
-                pColumns->push_back( pColumn );
-            }
-            pColumn->del(pPatternList->get( cell.y() ) );
-        }
+			if ( cell.x() < (int)pColumns->size() ) {
+				pColumn = (*pColumns)[ cell.x() ];
+			}
+			else {
+				pColumn = new PatternList();
+				pColumns->push_back( pColumn );
+			}
+			pColumn->del(pPatternList->get( cell.y() ) );
+		}
 	}
 
 	// remove the empty patternlist at the end of the song
@@ -640,7 +642,7 @@ void SongEditor::createBackground()
 	static int nOldHeight = -1;
 	int nNewHeight = m_nGridHeight * nPatterns;
 
-	if (nOldHeight != nNewHeight) {	
+	if (nOldHeight != nNewHeight) {
 		// cambiamento di dimensioni...
 		if (nNewHeight == 0) {
 			nNewHeight = 1;	// the pixmap should not be empty
@@ -725,58 +727,58 @@ void SongEditor::drawSequence()
 
 	//Drawing the pattern based on the gridRepresentation array
 
-        while (!gridRepresentation.isEmpty())
-             delete gridRepresentation.takeFirst();
+	while (!gridRepresentation.isEmpty())
+		delete gridRepresentation.takeFirst();
 
 
 
 	for (uint i = 0; i < pColumns->size(); i++) {
 		PatternList* pColumn = (*pColumns)[ i ];
-		
+
 		std::set<Pattern*> drawnAsVirtual;
 
 		for (uint nPat = 0; nPat < pColumn->size(); ++nPat) {
 			H2Core::Pattern *pat = pColumn->get( nPat );
 
 			if (drawnAsVirtual.find(pat) == drawnAsVirtual.end()) {
-			    int position = -1;
-			    // find the position in pattern list
-			    for (uint j = 0; j < listLength; j++) {
-				    H2Core::Pattern *pat2 = patList->get( j );
-				    if (pat == pat2) {
-					    position = j;
-					    break;
-				    }
-			    }
-			    if (position == -1) {
-				    WARNINGLOG( QString("[drawSequence] position == -1, group = %1").arg( i ) );
-			    }
-			    //normal pattern
-
-                            gridRepresentation.append(new SongEditorGridRepresentationItem(i,position,false));
-			}//if
-			
-			for ( Pattern::virtual_patterns_cst_it_t it = pat->get_flattened_virtual_patterns()->begin(); it != pat->get_flattened_virtual_patterns()->end(); ++it) {
-			    if (drawnAsVirtual.find(*it) == drawnAsVirtual.end()) {
-				int position = patList->index(*it);
-				if (position == -1) {
-				    WARNINGLOG( QString("[drawSequence] position == -1, group = %1").arg( i ) );
+				int position = -1;
+				// find the position in pattern list
+				for (uint j = 0; j < listLength; j++) {
+					H2Core::Pattern *pat2 = patList->get( j );
+					if (pat == pat2) {
+						position = j;
+						break;
+					}
 				}
-				//virtual pattern
-                                gridRepresentation.append(new SongEditorGridRepresentationItem(i,position,true));
-				drawnAsVirtual.insert(*it);
-			    }
+				if (position == -1) {
+					WARNINGLOG( QString("[drawSequence] position == -1, group = %1").arg( i ) );
+				}
+				//normal pattern
+
+				gridRepresentation.append(new SongEditorGridRepresentationItem(i,position,false));
+			}//if
+
+			for ( Pattern::virtual_patterns_cst_it_t it = pat->get_flattened_virtual_patterns()->begin(); it != pat->get_flattened_virtual_patterns()->end(); ++it) {
+				if (drawnAsVirtual.find(*it) == drawnAsVirtual.end()) {
+					int position = patList->index(*it);
+					if (position == -1) {
+						WARNINGLOG( QString("[drawSequence] position == -1, group = %1").arg( i ) );
+					}
+					//virtual pattern
+					gridRepresentation.append(new SongEditorGridRepresentationItem(i,position,true));
+					drawnAsVirtual.insert(*it);
+				}
 			}
 		}
 	}
 
 
-        //Draw the patterns according to the gridRepresentation
-        SongEditorGridRepresentationItem* s;
-        foreach(s, gridRepresentation)
-        {
-            drawPattern( s->x, s->y, s->value);
-        }
+	//Draw the patterns according to the gridRepresentation
+	SongEditorGridRepresentationItem* s;
+	foreach(s, gridRepresentation)
+	{
+		drawPattern( s->x, s->y, s->value);
+	}
 
 	// Moving cells
 	p.begin( m_pSequencePixmap );
@@ -806,9 +808,9 @@ void SongEditor::drawPattern( int pos, int number, bool invertColour )
 	UIStyle *pStyle = pref->getDefaultUIStyle();
 	QPainter p( m_pSequencePixmap );
 	QColor patternColor( pStyle->m_songEditor_pattern1Color.getRed(), pStyle->m_songEditor_pattern1Color.getGreen(), pStyle->m_songEditor_pattern1Color.getBlue() );
-	
+
 	if (true == invertColour) {
-	    patternColor = patternColor.darker(200);
+		patternColor = patternColor.darker(200);
 	}//if
 
 	bool bIsSelected = false;
@@ -877,15 +879,15 @@ SongEditorPatternList::SongEditorPatternList( QWidget *parent )
 	m_nWidth = 200;
 	m_nGridHeight = 18;
 	setAttribute(Qt::WA_NoBackground);
-	
+
 	setAcceptDrops(true);
 
 	patternBeingEdited = NULL;
-	
+
 	line = new QLineEdit( "Inline Pattern Name", this );
 	line->setFrame( false );
 	line->hide();
-        line->setAcceptDrops( false );
+	line->setAcceptDrops( false );
 	connect( line, SIGNAL(editingFinished()), this, SLOT(inlineEditingFinished()) );
 	connect( line, SIGNAL(returnPressed()), this, SLOT(inlineEditingEntered()) );
 
@@ -903,7 +905,8 @@ SongEditorPatternList::SongEditorPatternList( QWidget *parent )
 	m_pPatternPopup->addAction( trUtf8("Fill/Clear ..."),  this, SLOT( patternPopup_fill() ) );
 	m_pPatternPopup->addAction( trUtf8("Properties"),  this, SLOT( patternPopup_properties() ) );
 	m_pPatternPopup->addAction( trUtf8("Load Pattern"),  this, SLOT( patternPopup_load() ) );
-	m_pPatternPopup->addAction( trUtf8("Save Pattern"),  this, SLOT( patternPopup_save() ) );	
+	m_pPatternPopup->addAction( trUtf8("Save Pattern"),  this, SLOT( patternPopup_save() ) );
+	m_pPatternPopup->addAction( trUtf8("Export Pattern"),  this, SLOT( patternPopup_export() ) );
 	m_pPatternPopup->addAction( trUtf8("Virtual Pattern"), this, SLOT( patternPopup_virtualPattern() ) );
 
 	HydrogenApp::get_instance()->addEventListener( this );
@@ -925,7 +928,7 @@ void SongEditorPatternList::patternChangedEvent() {
 	update();
 	///here we check the timeline  && m_pSong->get_mode() == Song::SONG_MODE
 	Hydrogen *engine = Hydrogen::get_instance();
-        if ( ( Preferences::get_instance()->getUseTimelineBpm() ) && ( engine->getSong()->get_mode() == Song::SONG_MODE ) ){
+		if ( ( Preferences::get_instance()->getUseTimelineBpm() ) && ( engine->getSong()->get_mode() == Song::SONG_MODE ) ){
 		for ( int i = 0; i < static_cast<int>(engine->m_timelinevector.size()); i++){
 			if ( ( engine->m_timelinevector[i].m_htimelinebeat == engine->getPatternPos() )
 				&& ( engine->getNewBpmJTM() != engine->m_timelinevector[i].m_htimelinebpm ) ){
@@ -1002,12 +1005,12 @@ void SongEditorPatternList::inlineEditingEntered()
 {
 	assert( patternBeingEdited != NULL );
 	if ( PatternPropertiesDialog::nameCheck( line->text() ) )
-	{	
+	{
 		Hydrogen *pEngine = Hydrogen::get_instance();
 		int nSelectedPattern = pEngine->getSelectedPatternNumber();
 
-		SE_modifyPatternPropertiesAction *action = new SE_modifyPatternPropertiesAction(  patternBeingEdited->get_name() , patternBeingEdited->get_category(),
-												  line->text(), patternBeingEdited->get_category(), nSelectedPattern );	
+		SE_modifyPatternPropertiesAction *action = new SE_modifyPatternPropertiesAction(  patternBeingEdited->get_name() , patternBeingEdited->get_info(), patternBeingEdited->get_category(),
+												  line->text(), patternBeingEdited->get_info(), patternBeingEdited->get_category(), nSelectedPattern );
 		HydrogenApp::get_instance()->m_undoStack->push( action );
 	}
 // 	patternBeingEdited = NULL;
@@ -1121,7 +1124,7 @@ void SongEditorPatternList::createBackground()
 		}
 		else if (bActive) {
 //			p.drawText( 5, text_y - 1 - m_nGridHeight, m_nWidth - 25, m_nGridHeight + 2, Qt::AlignVCenter, ">" );
-		
+
 			//mark active pattern with triangular
 			if( ! pref->patternModePlaysSelected() ){
 				p.drawPixmap( QPoint( 5, text_y + 3 ), m_playingPattern_on_Pixmap );
@@ -1137,63 +1140,63 @@ void SongEditorPatternList::createBackground()
 
 void SongEditorPatternList::patternPopup_virtualPattern()
 {
-    Hydrogen *pEngine = Hydrogen::get_instance();
-    int nSelectedPattern = pEngine->getSelectedPatternNumber();
-    VirtualPatternDialog *dialog = new VirtualPatternDialog( this );
-    SongEditorPanel *pSEPanel = HydrogenApp::get_instance()->getSongEditorPanel();
-    int tmpselectedpatternpos = pEngine->getSelectedPatternNumber();    
+	Hydrogen *pEngine = Hydrogen::get_instance();
+	int nSelectedPattern = pEngine->getSelectedPatternNumber();
+	VirtualPatternDialog *dialog = new VirtualPatternDialog( this );
+	SongEditorPanel *pSEPanel = HydrogenApp::get_instance()->getSongEditorPanel();
+	int tmpselectedpatternpos = pEngine->getSelectedPatternNumber();
 
-    dialog->patternList->setSortingEnabled(1);
-    
-    Song *song = pEngine->getSong();
-    PatternList *pPatternList = song->get_pattern_list();
-    H2Core::Pattern *selectedPattern = pPatternList->get(tmpselectedpatternpos);
-    
-    std::map<QString, Pattern*> patternNameMap;
-    
-    int listsize = pPatternList->size();
-    for (unsigned int index = 0; index < listsize; ++index) {
-	H2Core::Pattern *curPattern = pPatternList->get( index );
-	QString patternName = curPattern->get_name();
-	
-	if (patternName == selectedPattern->get_name()) {
-	    continue;
-	}//if
-	
-	patternNameMap[patternName] = curPattern;
-	
-	QListWidgetItem *newItem = new QListWidgetItem(patternName, dialog->patternList);
-	dialog->patternList->insertItem(0, newItem );
-	
-	if (selectedPattern->get_virtual_patterns()->find(curPattern) != selectedPattern->get_virtual_patterns()->end()) {
-	    dialog->patternList->setItemSelected(newItem, true);
-	}//if
-    }//for
-    
-    if ( dialog->exec() == QDialog::Accepted ) {
-	selectedPattern->virtual_patterns_clear();
-	for (unsigned int index = 0; index < listsize-1; ++index) {
-	    QListWidgetItem *listItem = dialog->patternList->item(index);
-	    if (dialog->patternList->isItemSelected(listItem) == true) {
-		if (patternNameMap.find(listItem->text()) != patternNameMap.end()) {
-		    selectedPattern->virtual_patterns_add(patternNameMap[listItem->text()]);
+	dialog->patternList->setSortingEnabled(1);
+
+	Song *song = pEngine->getSong();
+	PatternList *pPatternList = song->get_pattern_list();
+	H2Core::Pattern *selectedPattern = pPatternList->get(tmpselectedpatternpos);
+
+	std::map<QString, Pattern*> patternNameMap;
+
+	int listsize = pPatternList->size();
+	for (unsigned int index = 0; index < listsize; ++index) {
+		H2Core::Pattern *curPattern = pPatternList->get( index );
+		QString patternName = curPattern->get_name();
+
+		if (patternName == selectedPattern->get_name()) {
+			continue;
 		}//if
-	    }//if
+
+		patternNameMap[patternName] = curPattern;
+
+		QListWidgetItem *newItem = new QListWidgetItem(patternName, dialog->patternList);
+		dialog->patternList->insertItem(0, newItem );
+
+		if (selectedPattern->get_virtual_patterns()->find(curPattern) != selectedPattern->get_virtual_patterns()->end()) {
+			dialog->patternList->setItemSelected(newItem, true);
+		}//if
 	}//for
-	
-	pSEPanel->updateAll();
-    }//if
 
-    pPatternList->flattened_virtual_patterns_compute();
+	if ( dialog->exec() == QDialog::Accepted ) {
+		selectedPattern->virtual_patterns_clear();
+		for (unsigned int index = 0; index < listsize-1; ++index) {
+			QListWidgetItem *listItem = dialog->patternList->item(index);
+			if (dialog->patternList->isItemSelected(listItem) == true) {
+				if (patternNameMap.find(listItem->text()) != patternNameMap.end()) {
+					selectedPattern->virtual_patterns_add(patternNameMap[listItem->text()]);
+				}//if
+			}//if
+		}//for
 
-    delete dialog;
+		pSEPanel->updateAll();
+	}//if
+
+	pPatternList->flattened_virtual_patterns_compute();
+
+	delete dialog;
 }//patternPopup_virtualPattern
 
 
 
 void SongEditorPatternList::patternPopup_load()
 {
-    HydrogenApp *hydrogenApp = HydrogenApp::get_instance();
+	HydrogenApp *hydrogenApp = HydrogenApp::get_instance();
 	Hydrogen *engine = Hydrogen::get_instance();
 	int tmpselectedpatternpos = engine->getSelectedPatternNumber();
 
@@ -1203,16 +1206,16 @@ void SongEditorPatternList::patternPopup_load()
 	QString oldPatternName = pat->get_name();
 
 	QDir dirPattern( Preferences::get_instance()->getDataDirectory() + "/patterns" );
-	std::auto_ptr<QFileDialog> fd( new QFileDialog );
-	fd->setFileMode(QFileDialog::ExistingFile);
-	fd->setFilter( trUtf8("Hydrogen Pattern (*.h2pattern)") );
-	fd->setDirectory(dirPattern );
+	QFileDialog fd(this);
+	fd.setFileMode(QFileDialog::ExistingFile);
+	fd.setFilter( trUtf8("Hydrogen Pattern (*.h2pattern)") );
+	fd.setDirectory(dirPattern );
 
-	fd->setWindowTitle( trUtf8( "Open Pattern" ) );
+	fd.setWindowTitle( trUtf8( "Open Pattern" ) );
 
 	QString filename;
-	if (fd->exec() == QDialog::Accepted) {
-		filename = fd->selectedFiles().first();
+	if (fd.exec() == QDialog::Accepted) {
+		filename = fd.selectedFiles().first();
 	}
 	else
 	{
@@ -1223,12 +1226,12 @@ void SongEditorPatternList::patternPopup_load()
 	time_t thetime;
 	thetime = time(NULL);
 
-    QString sequenceFilename = Preferences::get_instance()->getTmpDirectory() +QString("%1").arg(thetime)+ QString( "SEQ.xml" );
-    SE_loadPatternAction *action = new SE_loadPatternAction(  filename, oldPatternName, sequenceFilename, tmpselectedpatternpos );
-    hydrogenApp->addTemporaryFile( sequenceFilename );
-    hydrogenApp->m_undoStack->push( action );
+	QString sequenceFilename = Preferences::get_instance()->getTmpDirectory() +QString("%1").arg(thetime)+ QString( "SEQ.xml" );
+	SE_loadPatternAction *action = new SE_loadPatternAction(  filename, oldPatternName, sequenceFilename, tmpselectedpatternpos, false );
+	hydrogenApp->addTemporaryFile( sequenceFilename );
+	hydrogenApp->m_undoStack->push( action );
 
-	
+
 
 }
 
@@ -1261,8 +1264,14 @@ void SongEditorPatternList::loadPatternAction( QString afilename, int position)
 }
 
 
+void SongEditorPatternList::patternPopup_export()
+{
+	HydrogenApp::get_instance()->getMainForm()->action_file_export_pattern_as();
+	return;
+}
+
 void SongEditorPatternList::patternPopup_save()
-{	
+{
 	Hydrogen *engine = Hydrogen::get_instance();
 	int nSelectedPattern = engine->getSelectedPatternNumber();
 	Song *song = engine->getSong();
@@ -1280,17 +1289,18 @@ void SongEditorPatternList::patternPopup_save()
 				_ERRORLOG( "Error saving the pattern" );
 				return;
 			} //if err2
-		}else{ // res cancel 
+		}else{ // res cancel
 			return;
-		} //if res	
+		} //if res
 	} //if err
-	
+
 
 #ifdef WIN32
 	Sleep ( 10 );
 #else
 	usleep ( 10000 );
-#endif 
+#endif
+	SoundLibraryDatabase::get_instance()->updatePatterns();
 	HydrogenApp::get_instance()->getInstrumentRack()->getSoundLibraryPanel()->test_expandedItems();
 	HydrogenApp::get_instance()->getInstrumentRack()->getSoundLibraryPanel()->updateDrumkitList();
 }
@@ -1321,13 +1331,14 @@ void SongEditorPatternList::patternPopup_properties()
 }
 
 
-void SongEditorPatternList::acceptPatternPropertiesDialogSettings(QString newPatternName, QString newPatternCategory, int patternNr)
+void SongEditorPatternList::acceptPatternPropertiesDialogSettings(QString newPatternName, QString newPatternInfo, QString newPatternCategory, int patternNr)
 {
 	Hydrogen *engine = Hydrogen::get_instance();
 	Song *song = engine->getSong();
 	PatternList *patternList = song->get_pattern_list();
 	H2Core::Pattern *pattern = patternList->get( patternNr );
 	pattern->set_name( newPatternName );
+	pattern->set_info( newPatternInfo );
 	pattern->set_category( newPatternCategory );
 	song->__is_modified = true;
 	EventQueue::get_instance()->push_event( EVENT_SELECTED_PATTERN_CHANGED, -1 );
@@ -1336,7 +1347,7 @@ void SongEditorPatternList::acceptPatternPropertiesDialogSettings(QString newPat
 }
 
 
-void SongEditorPatternList::revertPatternPropertiesDialogSettings(QString oldPatternName, QString oldPatternCategory, int patternNr)
+void SongEditorPatternList::revertPatternPropertiesDialogSettings(QString oldPatternName, QString oldPatternInfo, QString oldPatternCategory, int patternNr)
 {
 	Hydrogen *engine = Hydrogen::get_instance();
 	Song *song = engine->getSong();
@@ -1355,23 +1366,21 @@ void SongEditorPatternList::patternPopup_delete()
 {
 
 	Hydrogen *pEngine = Hydrogen::get_instance();
-    HydrogenApp *hydrogenApp = HydrogenApp::get_instance();
-	Song *song = pEngine->getSong();
-	PatternList *pSongPatternList = song->get_pattern_list();
+	HydrogenApp *hydrogenApp = HydrogenApp::get_instance();
 	int patternPosition = pEngine->getSelectedPatternNumber();
 
 	//create a unique sequencefilename
 	time_t thetime;
 	thetime = time(NULL);
-    QString sequenceFilename = Preferences::get_instance()->getTmpDirectory() +QString("%1").arg(thetime)+ QString( "SEQ.xml" );
+	QString sequenceFilename = Preferences::get_instance()->getTmpDirectory() +QString("%1").arg(thetime)+ QString( "SEQ.xml" );
 
 	//create a unique patternfilename
-    QString patternFilename = Preferences::get_instance()->getTmpDirectory() +QString("%1").arg(thetime)+ QString( "PAT.xml" );
+	QString patternFilename = Preferences::get_instance()->getTmpDirectory() +QString("%1").arg(thetime)+ QString( "PAT.xml" );
 
-    SE_deletePatternFromListAction *action = new 	SE_deletePatternFromListAction( patternFilename , sequenceFilename, patternPosition );
-    hydrogenApp->addTemporaryFile( sequenceFilename );
-    hydrogenApp->addTemporaryFile( patternFilename );
-    hydrogenApp->m_undoStack->push( action );
+	SE_deletePatternFromListAction *action = new 	SE_deletePatternFromListAction( patternFilename , sequenceFilename, patternPosition );
+	hydrogenApp->addTemporaryFile( sequenceFilename );
+	hydrogenApp->addTemporaryFile( patternFilename );
+	hydrogenApp->m_undoStack->push( action );
 
 }
 
@@ -1393,7 +1402,7 @@ void SongEditorPatternList::deletePatternFromList( QString patternFilename, QStr
 	//this is important because parts of the sequese will remove after deleting a pattern
 	LocalFileMng fileMng;
 	int errseq = fileMng.writeTempPatternList( song , sequenceFileName);
-	
+
 	//write pattern to disk;
 	Pattern *pat = song->get_pattern_list()->get( patternPosition );
 
@@ -1405,7 +1414,7 @@ void SongEditorPatternList::deletePatternFromList( QString patternFilename, QStr
 	Sleep ( 10 );
 #else
 	usleep ( 10000 );
-#endif 
+#endif
 	//~save pattern end
 
 	H2Core::Pattern *pattern = pSongPatternList->get( patternPosition );
@@ -1443,7 +1452,7 @@ void SongEditorPatternList::deletePatternFromList( QString patternFilename, QStr
 		pEngine->setSelectedPatternNumber( 0 );
 	}
 	else {
-		// there's no patterns..	
+		// there's no patterns..
 		Pattern *emptyPattern = new Pattern();
 		emptyPattern->set_name( trUtf8("Pattern 1") );
 		emptyPattern->set_category( trUtf8("not_categorized") );
@@ -1451,14 +1460,14 @@ void SongEditorPatternList::deletePatternFromList( QString patternFilename, QStr
 		pEngine->setSelectedPatternNumber( -1 );
 		pEngine->setSelectedPatternNumber( 0 );
 	}
-	
+
 	for (unsigned int index = 0; index < pSongPatternList->size(); ++index) {
-	    H2Core::Pattern *curPattern = pSongPatternList->get(index);
-	    
-        Pattern::virtual_patterns_cst_it_t it = curPattern->get_virtual_patterns()->find(pattern);
-	    if (it != curPattern->get_virtual_patterns()->end()) {
+		H2Core::Pattern *curPattern = pSongPatternList->get(index);
+
+		Pattern::virtual_patterns_cst_it_t it = curPattern->get_virtual_patterns()->find(pattern);
+		if (it != curPattern->get_virtual_patterns()->end()) {
 		curPattern->virtual_patterns_del(*it);
-	    }//if
+		}//if
 	}//for
 
 	pSongPatternList->flattened_virtual_patterns_compute();
@@ -1469,7 +1478,7 @@ void SongEditorPatternList::deletePatternFromList( QString patternFilename, QStr
 
 }
 
-void SongEditorPatternList::restoreDeletedPatternsFromList( QString patternFilename, QString sequenceFileName, int patternPosition  )
+void SongEditorPatternList::restoreDeletedPatternsFromList( QString patternFilename, QString sequenceFileName, int patternPosition )
 {
 
 	Hydrogen *engine = Hydrogen::get_instance();
@@ -1496,7 +1505,7 @@ void SongEditorPatternList::restoreDeletedPatternsFromList( QString patternFilen
 		song->__is_modified = true;
 		createBackground();
 		HydrogenApp::get_instance()->getSongEditorPanel()->updateAll();
-		EventQueue::get_instance()->push_event( EVENT_SELECTED_PATTERN_CHANGED, -1 );	
+		EventQueue::get_instance()->push_event( EVENT_SELECTED_PATTERN_CHANGED, -1 );
 	}
 
 }
@@ -1505,7 +1514,7 @@ void SongEditorPatternList::restoreDeletedPatternsFromList( QString patternFilen
 void SongEditorPatternList::patternPopup_copy()
 {
 	Hydrogen *pEngine = Hydrogen::get_instance();
-    HydrogenApp *hydrogenApp = HydrogenApp::get_instance();
+	HydrogenApp *hydrogenApp = HydrogenApp::get_instance();
 	Song *pSong = pEngine->getSong();
 	PatternList *pPatternList = pSong->get_pattern_list();
 	int nSelectedPattern = pEngine->getSelectedPatternNumber();
@@ -1527,15 +1536,15 @@ void SongEditorPatternList::patternPopup_copy()
 		int err =1;
 		err = fileMng.savePattern( pSong, pEngine->getCurrentDrumkitname(), pPatternList->size() -1 , patternFilename, pNewPattern->get_name(), 4 );
 
-        SE_copyPatternAction *action = new SE_copyPatternAction( patternFilename ,nSelectedPattern + 1 );
-        hydrogenApp->addTemporaryFile( patternFilename );
-        hydrogenApp->m_undoStack->push( action );
+		SE_copyPatternAction *action = new SE_copyPatternAction( patternFilename ,nSelectedPattern + 1 );
+		hydrogenApp->addTemporaryFile( patternFilename );
+		hydrogenApp->m_undoStack->push( action );
 	}
-	
+
 	//delete the tmp pattern
 	pPatternList->del( pNewPattern );
 	delete pNewPattern;
-	
+
 	delete dialog;
 
 	HydrogenApp::get_instance()->getSongEditorPanel()->updateAll();
@@ -1544,7 +1553,7 @@ void SongEditorPatternList::patternPopup_copy()
 
 void SongEditorPatternList::patternPopup_copyAction( QString patternFilename, int patternposition )
 {
-	
+
 	Hydrogen *engine = Hydrogen::get_instance();
 	Song *song = engine->getSong();
 	PatternList *pPatternList = song->get_pattern_list();
@@ -1558,12 +1567,12 @@ void SongEditorPatternList::patternPopup_copyAction( QString patternFilename, in
 		H2Core::Pattern *pNewPattern = err;
 		pPatternList->add( pNewPattern );
 
-                for (int nPatr = pPatternList->size() +1 ; nPatr >= patternposition; nPatr--) {
-                        H2Core::Pattern *pPattern = pPatternList->get(nPatr - 1);
-                        pPatternList->replace( nPatr, pPattern );
-                }
-                pPatternList->replace( patternposition, pNewPattern );
-                engine->setSelectedPatternNumber( patternposition );
+		for (int nPatr = pPatternList->size() +1 ; nPatr >= patternposition; nPatr--) {
+			H2Core::Pattern *pPattern = pPatternList->get(nPatr - 1);
+			pPatternList->replace( nPatr, pPattern );
+		}
+		pPatternList->replace( patternposition, pNewPattern );
+		engine->setSelectedPatternNumber( patternposition );
 
 		song->__is_modified = true;
 		createBackground();
@@ -1704,8 +1713,6 @@ void SongEditorPatternList::dropEvent(QDropEvent *event)
 		event->acceptProposedAction();
 	}else {
 
-		PatternList *pPatternList = Hydrogen::get_instance()->getSong()->get_pattern_list();
-
 		QStringList tokens = sText.split( "::" );
 		QString sPatternName = tokens.at( 1 );
 
@@ -1714,17 +1721,19 @@ void SongEditorPatternList::dropEvent(QDropEvent *event)
 		//create a unique sequencefilename
 		Song *song = Hydrogen::get_instance()->getSong();
 		Pattern *pat = song->get_pattern_list()->get( nTargetPattern );
-        HydrogenApp *hydrogenApp = HydrogenApp::get_instance();
+		HydrogenApp *hydrogenApp = HydrogenApp::get_instance();
 
 		QString oldPatternName = pat->get_name();
 
-		time_t thetime;
-		thetime = time(NULL);
-        QString sequenceFilename = Preferences::get_instance()->getTmpDirectory() +QString("%1").arg(thetime)+ QString( "SEQ.xml" );
-        SE_loadPatternAction *action = new SE_loadPatternAction(  sPatternName, oldPatternName, sequenceFilename, nTargetPattern );
+		time_t theTime;
+		theTime = time(NULL);
+		QString sequenceFilename = Preferences::get_instance()->getTmpDirectory() +QString("%1").arg( theTime )+ QString( "SEQ.xml" );
+		bool drag = false;
+		if( QString( tokens.at(0) ).contains( "drag pattern" )) drag = true;
+		SE_loadPatternAction *action = new SE_loadPatternAction( sPatternName, oldPatternName, sequenceFilename, nTargetPattern, drag );
 
-        hydrogenApp->addTemporaryFile( sequenceFilename);
-        hydrogenApp->m_undoStack->push( action );
+		hydrogenApp->addTemporaryFile( sequenceFilename );
+		hydrogenApp->m_undoStack->push( action );
 	}
 }
 
@@ -1865,7 +1874,7 @@ void SongEditorPositionRuler::createBackground()
 	p.fillRect( 0, 0, width(), 24, QColor( 67, 72, 83, 105) );
 	char tmp[10];
 	for (uint i = 0; i < m_nMaxPatternSequence + 1; i++) {
-		uint x = 10 + i * m_nGridWidth;	
+		uint x = 10 + i * m_nGridWidth;
 		for ( int t = 0; t < static_cast<int>(Hydrogen::get_instance()->m_timelinetagvector.size()); t++){
 			if ( Hydrogen::get_instance()->m_timelinetagvector[t].m_htimelinetagbeat == i ) {
 				p.setPen( Qt::cyan );
@@ -1889,7 +1898,7 @@ void SongEditorPositionRuler::createBackground()
 
 
 //draw tempo content
-        if(pref->getUseTimelineBpm()){
+		if(pref->getUseTimelineBpm()){
 		p.setPen( textColor );
 	}else
 	{
@@ -1928,7 +1937,7 @@ void SongEditorPositionRuler::mouseMoveEvent(QMouseEvent *ev)
 		// Right-click+drag
 		int column = (ev->x() / m_nGridWidth);
 		Preferences* pPref = Preferences::get_instance();
-                if ( column > (int)Hydrogen::get_instance()->getSong()->get_pattern_group_vector()->size() ) {
+				if ( column > (int)Hydrogen::get_instance()->getSong()->get_pattern_group_vector()->size() ) {
 			pPref->setPunchOutPos(-1);
 			return;
 		}
@@ -1949,10 +1958,10 @@ void SongEditorPositionRuler::mousePressEvent( QMouseEvent *ev )
 		int column = (ev->x() / m_nGridWidth);
 		m_bRightBtnPressed = false;
 
-                if ( column > (int)Hydrogen::get_instance()->getSong()->get_pattern_group_vector()->size() ) {
+				if ( column > (int)Hydrogen::get_instance()->getSong()->get_pattern_group_vector()->size() ) {
 			return;
 		}
-	
+
 		// disabling son relocates while in pattern mode as it causes weird behaviour. (jakob lund)
 		if ( Hydrogen::get_instance()->getSong()->get_mode() == Song::PATTERN_MODE ) {
 			return;
@@ -1991,7 +2000,7 @@ void SongEditorPositionRuler::mousePressEvent( QMouseEvent *ev )
 		pPref->setPunchOutPos(-1);
 		update();
 	}
-        else if( ( ev->button() == Qt::LeftButton || ev->button() == Qt::RightButton ) && ev->y() <= 25 && Preferences::get_instance()->getUseTimelineBpm() ){
+		else if( ( ev->button() == Qt::LeftButton || ev->button() == Qt::RightButton ) && ev->y() <= 25 && Preferences::get_instance()->getUseTimelineBpm() ){
 		int column = (ev->x() / m_nGridWidth);
 		SongEditorPanelBpmWidget dialog( this , column );
 		if (dialog.exec() == QDialog::Accepted) {
@@ -2016,7 +2025,7 @@ void SongEditorPositionRuler::paintEvent( QPaintEvent *ev )
 	if (!isVisible()) {
 		return;
 	}
-	
+
 	Hydrogen *H = Hydrogen::get_instance();
 
 	float fPos = H->getPatternPos();
@@ -2027,9 +2036,9 @@ void SongEditorPositionRuler::paintEvent( QPaintEvent *ev )
 		H2Core::Pattern *pPattern = H->getCurrentPatternList()->get( 0 );
 
 		if (pPattern != NULL){
-		    fPos += (float)H->getTickPosition() / (float)pPattern->get_length();
+			fPos += (float)H->getTickPosition() / (float)pPattern->get_length();
 		} else {
-		    fPos += (float)H->getTickPosition() / (float)MAX_NOTES;
+			fPos += (float)H->getTickPosition() / (float)MAX_NOTES;
 		}
 	}
 	else {
@@ -2075,7 +2084,7 @@ void SongEditorPositionRuler::updatePosition()
 void SongEditorPositionRuler::editTimeLineAction( int newPosition, float newBpm )
 {
 	Hydrogen* engine = Hydrogen::get_instance();
-	
+
 	//erase the value to set the new value
 	if( engine->m_timelinevector.size() >= 1 ){
 		for ( int t = 0; t < engine->m_timelinevector.size(); t++){
@@ -2090,7 +2099,7 @@ void SongEditorPositionRuler::editTimeLineAction( int newPosition, float newBpm 
 	tlvector.m_htimelinebeat = newPosition -1 ;
 
 	if( newBpm < 30.0 ) newBpm = 30.0;
-	if( newBpm > 500.0 ) newBpm = 500.0;	
+	if( newBpm > 500.0 ) newBpm = 500.0;
 	tlvector.m_htimelinebpm = newBpm;
 	engine->m_timelinevector.push_back( tlvector );
 	engine->sortTimelineVector();
@@ -2120,8 +2129,8 @@ void SongEditorPositionRuler::editTagAction( QString text, int position, QString
 
 	//check vector for old entries and remove them.
 	for( int i = 0; i < engine->m_timelinetagvector.size(); ++i ){
-		if( ( engine->m_timelinetagvector[i].m_htimelinetag == textToReplace ) && 
-		    ( engine->m_timelinetagvector[i].m_htimelinetagbeat == position ) ){
+		if( ( engine->m_timelinetagvector[i].m_htimelinetag == textToReplace ) &&
+			( engine->m_timelinetagvector[i].m_htimelinetagbeat == position ) ){
 
 			engine->m_timelinetagvector.erase( engine->m_timelinetagvector.begin() + i );
 			break;
@@ -2140,8 +2149,8 @@ void SongEditorPositionRuler::deleteTagAction( QString text, int position )
 
 	Hydrogen* engine = Hydrogen::get_instance();
 	for( int i = 0; i < engine->m_timelinetagvector.size(); ++i ){
-		if( ( engine->m_timelinetagvector[i].m_htimelinetag == text ) && 
-		    ( engine->m_timelinetagvector[i].m_htimelinetagbeat == position ) ){
+		if( ( engine->m_timelinetagvector[i].m_htimelinetag == text ) &&
+			( engine->m_timelinetagvector[i].m_htimelinetagbeat == position ) ){
 
 			engine->m_timelinetagvector.erase( engine->m_timelinetagvector.begin() + i );
 			break;
